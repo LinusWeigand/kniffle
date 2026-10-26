@@ -1,0 +1,156 @@
+const STRINGS = {
+  de: {
+    tagline: 'Fünf Würfel. Dreizehn Runden. Spiel online mit Freunden.',
+    yourName: 'Dein Name',
+    createGame: 'Spiel erstellen',
+    invited: 'Du bist eingeladen.',
+    joinRoom: 'Raum {code} beitreten',
+    joinGame: 'Beitreten',
+    howTitle: 'So geht’s.',
+    how1t: 'Spiel erstellen', how1: 'Gib deinen Namen ein und eröffne einen Raum.',
+    how2t: 'Link teilen', how2: 'Schick den Link an deine Freunde – bis zu sechs Spieler.',
+    how3t: 'Würfeln', how3: 'Drei Würfe pro Zug. Halte Würfel, trag ein, gewinne.',
+    rulesTitle: 'Regeln.',
+    rulesText: 'Jeder Zug: bis zu drei Würfe. Tippe Würfel an, um sie zu halten. Danach trägst du das Ergebnis in ein freies Feld ein – oder streichst eins mit 0. Wer nach 13 Runden die meisten Punkte hat, gewinnt. Ab 63 Punkten oben gibt es 35 Bonuspunkte.',
+    room: 'Raum',
+    leave: 'Verlassen',
+    leaveConfirm: 'Spiel wirklich verlassen?',
+    leaveConfirmHost: 'Spiel beenden? Alle Mitspieler werden getrennt.',
+    inviteTitle: 'Lade deine Freunde ein.',
+    inviteText: 'Schick ihnen diesen Link. Sobald alle da sind, startest du das Spiel.',
+    copy: 'Kopieren', copied: 'Kopiert', share: 'Teilen',
+    players: 'Spieler',
+    you: 'Du', host: 'Host', offline: 'offline',
+    start: 'Spiel starten',
+    startSolo: 'Allein spielen',
+    waitingHost: 'Warte, bis {name} das Spiel startet …',
+    yourTurn: 'Du bist dran.',
+    theirTurn: '{name} ist dran.',
+    offlineTurn: '{name} ist offline – warte auf Rückkehr …',
+    round: 'Runde {n} von 13',
+    roll: 'Würfeln', rollAgain: 'Nochmal ({n})',
+    tapToHold: 'Tippe Würfel an, um sie zu halten.',
+    held: 'Gehalten',
+    pickBox: 'Wähle ein Feld auf dem Zettel.',
+    firstRoll: 'Los geht’s – würfle!',
+    enter: 'Eintragen',
+    strike: 'Streichen',
+    points: '{n} Punkte',
+    upperSum: 'Summe oben', bonus: 'Bonus', total: 'Gesamt',
+    bonusHint: 'ab 63',
+    scored: '{name}: {value} bei {cat}',
+    joined: '{name} ist da.',
+    left: '{name} ist offline.',
+    wins: '{name} gewinnt.',
+    youWin: 'Du gewinnst.',
+    tie: 'Unentschieden.',
+    playAgain: 'Nochmal spielen',
+    waitingRematch: 'Warte auf {name} für eine neue Runde …',
+    connecting: 'Verbinde …',
+    reconnecting: 'Verbindung unterbrochen – verbinde neu …',
+    hostOffline: 'Der Host ist gerade nicht erreichbar. Neuer Versuch läuft …',
+    errStarted: 'Dieses Spiel läuft bereits.',
+    errFull: 'Dieser Raum ist voll.',
+    errClosed: 'Der Host hat das Spiel beendet.',
+    errPeer: 'Verbindung fehlgeschlagen: {msg}',
+    back: 'Zur Startseite',
+    cats: {
+      ones: ['Einser', 'Nur Einser zählen'], twos: ['Zweier', 'Nur Zweier zählen'],
+      threes: ['Dreier', 'Nur Dreier zählen'], fours: ['Vierer', 'Nur Vierer zählen'],
+      fives: ['Fünfer', 'Nur Fünfer zählen'], sixes: ['Sechser', 'Nur Sechser zählen'],
+      threeKind: ['Dreierpasch', 'Alle Augen'], fourKind: ['Viererpasch', 'Alle Augen'],
+      fullHouse: ['Full House', '25 Punkte'], smallStraight: ['Kleine Straße', '30 Punkte'],
+      largeStraight: ['Große Straße', '40 Punkte'], kniffel: ['Kniffel', '50 Punkte'],
+      chance: ['Chance', 'Alle Augen'],
+    },
+  },
+  en: {
+    tagline: 'Five dice. Thirteen rounds. Play online with friends.',
+    yourName: 'Your name',
+    createGame: 'Create game',
+    invited: 'You’re invited.',
+    joinRoom: 'Join room {code}',
+    joinGame: 'Join',
+    howTitle: 'How it works.',
+    how1t: 'Create a game', how1: 'Enter your name and open a room.',
+    how2t: 'Share the link', how2: 'Send the link to your friends – up to six players.',
+    how3t: 'Roll', how3: 'Three rolls per turn. Hold dice, score, win.',
+    rulesTitle: 'Rules.',
+    rulesText: 'Each turn: up to three rolls. Tap dice to hold them. Then enter the result in any free box – or strike one with 0. Highest score after 13 rounds wins. Reach 63 in the upper section for a 35-point bonus.',
+    room: 'Room',
+    leave: 'Leave',
+    leaveConfirm: 'Leave this game?',
+    leaveConfirmHost: 'End the game? Everyone will be disconnected.',
+    inviteTitle: 'Invite your friends.',
+    inviteText: 'Send them this link. Start the game once everyone is here.',
+    copy: 'Copy', copied: 'Copied', share: 'Share',
+    players: 'Players',
+    you: 'You', host: 'Host', offline: 'offline',
+    start: 'Start game',
+    startSolo: 'Play solo',
+    waitingHost: 'Waiting for {name} to start …',
+    yourTurn: 'Your turn.',
+    theirTurn: '{name}’s turn.',
+    offlineTurn: '{name} is offline – waiting …',
+    round: 'Round {n} of 13',
+    roll: 'Roll', rollAgain: 'Roll again ({n})',
+    tapToHold: 'Tap dice to hold them.',
+    held: 'Held',
+    pickBox: 'Pick a box on the score card.',
+    firstRoll: 'Go ahead – roll!',
+    enter: 'Enter',
+    strike: 'Strike',
+    points: '{n} points',
+    upperSum: 'Upper total', bonus: 'Bonus', total: 'Total',
+    bonusHint: 'at 63',
+    scored: '{name}: {value} in {cat}',
+    joined: '{name} joined.',
+    left: '{name} went offline.',
+    wins: '{name} wins.',
+    youWin: 'You win.',
+    tie: 'It’s a tie.',
+    playAgain: 'Play again',
+    waitingRematch: 'Waiting for {name} to start a new game …',
+    connecting: 'Connecting …',
+    reconnecting: 'Connection lost – reconnecting …',
+    hostOffline: 'The host can’t be reached right now. Retrying …',
+    errStarted: 'This game has already started.',
+    errFull: 'This room is full.',
+    errClosed: 'The host ended the game.',
+    errPeer: 'Connection failed: {msg}',
+    back: 'Back to start',
+    cats: {
+      ones: ['Ones', 'Count ones'], twos: ['Twos', 'Count twos'],
+      threes: ['Threes', 'Count threes'], fours: ['Fours', 'Count fours'],
+      fives: ['Fives', 'Count fives'], sixes: ['Sixes', 'Count sixes'],
+      threeKind: ['Three of a kind', 'Sum of all dice'], fourKind: ['Four of a kind', 'Sum of all dice'],
+      fullHouse: ['Full house', '25 points'], smallStraight: ['Small straight', '30 points'],
+      largeStraight: ['Large straight', '40 points'], kniffel: ['Kniffel', '50 points'],
+      chance: ['Chance', 'Sum of all dice'],
+    },
+  },
+};
+
+function initialLang() {
+  try {
+    const saved = localStorage.getItem('kniffel.lang');
+    if (saved in STRINGS) return saved;
+  } catch {}
+  return (navigator.language || '').toLowerCase().startsWith('de') ? 'de' : 'en';
+}
+
+export let lang = initialLang();
+
+export function setLang(next) {
+  lang = next;
+  document.documentElement.lang = next;
+  try { localStorage.setItem('kniffel.lang', next); } catch {}
+}
+
+export function t(key, vars = {}) {
+  const s = STRINGS[lang][key] ?? STRINGS.en[key] ?? key;
+  return s.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
+}
+
+export const catName = (cat) => STRINGS[lang].cats[cat][0];
+export const catHint = (cat) => STRINGS[lang].cats[cat][1];
