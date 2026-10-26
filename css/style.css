@@ -350,6 +350,7 @@ a { color: var(--primary); text-decoration: none; }
   .die.held { transform: translateY(-6px); }
   .die.held::after { bottom: -24px; font-size: 10px; }
   .table .btn-hero { min-height: 44px; padding: 11px 22px; font-size: 17px; }
+  .table .btn-hero.invisible { display: none; }
   .hint { display: none; }
   .sheet { padding: 16px 12px 120px; }
   .ranking li { padding: 8px 4px; }

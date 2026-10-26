@@ -34,7 +34,8 @@ let screen = null;
 let selectedCat = null;
 let lastRollSeq = -1;
 let flashKey = null;
-const hostConns = new Map(); // pid -> DataConnection (host only)
+const lastSeen = new Map(); // pid -> ms timestamp of their last message (host only)
+const GUEST_TIMEOUT = 70000;
 
 const app = $('#app');
 const subnav = $('#subnav');
@@ -150,7 +151,7 @@ function introTiles() {
         <ul class="card rule-list">${catRows(LOWER)}</ul>
       </div>
     </section>
-    <footer class="footer">Kniffel · peer-to-peer, no sign-up · <a href="https://github.com/LinusWeigand/kniffle">GitHub</a></footer>`;
+    <footer class="footer">Kniffel · no sign-up · <a href="https://github.com/LinusWeigand/kniffle">GitHub</a></footer>`;
 }
 
 function bindShowcase() {
@@ -259,9 +260,18 @@ function startHosting(roomCode, initial) {
   for (const p of state.players) p.connected = p.id === me.id;
   persistHost();
   netStatus = 'connecting';
-  net = new HostNet(roomCode, { onStatus, onMessage: onGuestMessage, onClose: onGuestClose });
+  net = new HostNet(roomCode, { onStatus, onMessage: onGuestMessage });
+  net.publishState(state);
   render();
 }
+
+// Guests ping every 20s and the broker sends a "bye" when their socket dies; this catches the rest.
+setInterval(() => {
+  if (role !== 'host' || !state) return;
+  const now = Date.now();
+  const stale = state.players.filter((p) => p.id !== me.id && p.connected && now - (lastSeen.get(p.id) ?? 0) > GUEST_TIMEOUT);
+  if (stale.length) commit(stale.reduce((s, p) => dropPlayer(s, p.id), state));
+}, 10000);
 
 function startGuest(roomCode) {
   role = 'guest';
@@ -281,7 +291,7 @@ function leave() {
   session.del('kniffel.guest');
   role = null;
   state = null;
-  hostConns.clear();
+  lastSeen.clear();
   setHash('');
   renderBanner();
   renderLanding();
@@ -307,7 +317,7 @@ function commit(next) {
   const prev = state;
   state = next;
   persistHost();
-  net.broadcast({ t: 'state', state });
+  net.publishState(state);
   render(prev);
 }
 
@@ -316,47 +326,34 @@ function hostApply(actorId, action) {
     commit(applyAction(state, actorId, action));
   } catch (e) {
     if (!(e instanceof GameError)) throw e;
-    if (actorId !== me.id) net.sendTo(hostConns.get(actorId), { t: 'error', code: e.code });
+    if (actorId !== me.id) net.sendTo(actorId, { t: 'error', code: e.code });
   }
 }
 
-function onGuestMessage(conn, msg) {
-  if (msg?.t === 'hello') {
-    const pid = String(msg.pid || '').slice(0, 40);
-    if (!pid || pid === me.id) return;
-    let next;
+function onGuestMessage(msg) {
+  const pid = msg.pid.slice(0, 40);
+  if (!pid || pid === me.id) return;
+  lastSeen.set(pid, Date.now());
+  const player = state.players.find((p) => p.id === pid);
+
+  if (msg.t === 'hello' || (msg.t === 'ping' && player && !player.connected)) {
     try {
-      next = addPlayer(state, pid, msg.name);
+      commit(addPlayer(state, pid, msg.t === 'hello' ? msg.name : player.name));
     } catch (e) {
       if (!(e instanceof GameError)) throw e;
-      net.sendTo(conn, { t: 'reject', reason: e.code });
-      return;
+      net.sendTo(pid, { t: 'reject', reason: e.code });
     }
-    const old = hostConns.get(pid);
-    if (old && old !== conn) {
-      old.pid = null;
-      try { old.close(); } catch {}
-    }
-    conn.pid = pid;
-    hostConns.set(pid, conn);
-    commit(next);
-  } else if (msg?.t === 'action' && conn.pid && msg.action && typeof msg.action === 'object') {
-    hostApply(conn.pid, { type: msg.action.type, index: msg.action.index, cat: msg.action.cat });
+  } else if (msg.t === 'bye' && player?.connected) {
+    commit(dropPlayer(state, pid));
+  } else if (msg.t === 'action' && player && msg.action && typeof msg.action === 'object') {
+    hostApply(pid, { type: msg.action.type, index: msg.action.index, cat: msg.action.cat });
   }
-}
-
-function onGuestClose(conn) {
-  if (!conn.pid || hostConns.get(conn.pid) !== conn) return;
-  hostConns.delete(conn.pid);
-  commit(dropPlayer(state, conn.pid));
 }
 
 function onHostMessage(msg) {
   if (msg?.t === 'state' && msg.state) {
     const prev = state;
     state = msg.state;
-    netStatus = 'online';
-    renderBanner();
     render(prev);
   } else if (msg?.t === 'reject') {
     fail(msg.reason === 'full' ? t('errFull') : t('errStarted'));
@@ -646,8 +643,8 @@ $('#lang').onclick = () => {
 function boot() {
   setLang(lang);
   renderNav();
-  if (typeof Peer === 'undefined') {
-    renderMessage(t('errPeer', { msg: 'PeerJS' }));
+  if (typeof mqtt === 'undefined') {
+    renderMessage(t('errPeer', { msg: 'mqtt.js' }));
     return;
   }
   const hashCode = location.hash.slice(1).toUpperCase().replace(/[^A-Z0-9]/g, '');
